@@ -1,0 +1,15 @@
+{
+  "name": "Trust-No-Input Demo (C)",
+  "image": "mcr.microsoft.com/devcontainers/cpp:ubuntu",
+  "features": {},
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.makefile-tools",
+        "EditorConfig.EditorConfig"
+      ]
+    }
+  }
+}
