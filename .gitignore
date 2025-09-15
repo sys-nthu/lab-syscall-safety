@@ -1,6 +1,6 @@
 readmail
 readmail-v2
-mail/mails
+readmail-safe
 .vscode/
 *.swp
 passwords.txt
@@ -9,3 +9,4 @@ create-v2
 open-ro
 open-wo
 open-v1
+.env

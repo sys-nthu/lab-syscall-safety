@@ -33,12 +33,12 @@ EOF
 done
 
 # 3) Demo password file (plain text on purpose for the lab)
-cat > passwords.txt <<'EOF'
+cat > "$ROOTDIR/passwords.txt" <<'EOF'
 user1:pass1
 user2:pass2
 user3:pass3
 EOF
-chmod 600 passwords.txt
+chmod 600 "$ROOTDIR/passwords.txt"
 
-echo "Users: user1/user2/user3 (passwords in passwords.txt)."
+echo "Users: user1/user2/user3 (passwords in $ROOTDIR/passwords.txt)."
 echo "Mail dirs: $ROOTDIR/{user1,user2,user3} with per-user 'mail' file."
