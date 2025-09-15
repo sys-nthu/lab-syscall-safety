@@ -1,6 +1,8 @@
 #include "mail-common.h"
 #include <ctype.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -64,3 +66,14 @@ void print_mail_from_fd(int fd) {
     if (n == -1) perror("read");
 }
 
+int open_and_print(const char *path) {
+    int fd = open(path, O_RDONLY);
+    if (fd == -1) {
+        fprintf(stderr, "%s\n", path);
+        perror("open");
+        return -1;
+    }
+    print_mail_from_fd(fd);
+    close(fd);
+    return 0;
+}

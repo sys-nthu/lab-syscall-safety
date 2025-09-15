@@ -15,23 +15,14 @@
 #include "mail-common.h"
 
 static int drop_to_user(const char *username) {
+    int previous_uid = geteuid();
     struct passwd *pw = getpwnam(username);
-    if (!pw) { fprintf(stderr, "unknown user: %s\n", username); return -1; }
+    if (!pw) { perror("getpwnam"); return -1; }
 
-    if (initgroups(pw->pw_name, pw->pw_gid) == -1) {
-        perror("initgroups"); return -1;
-    }
-    if (setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) == -1) {
-        perror("setresgid"); return -1;
-    }
-    if (setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) == -1) {
-        perror("setresuid"); return -1;
-    }
+    if (seteuid(pw->pw_uid) == -1) { perror("seteuid"); return -1; }
 
-    if (geteuid() == 0 || getuid() == 0) {
-        fprintf(stderr, "failed to drop privileges\n");
-        return -1;
-    }
+    printf("previous effective uid=%d, current effective uid=%d\n", previous_uid, geteuid());
+    if (geteuid() == 0) { fprintf(stderr, "still root euid\n"); return -1; }
     return 0;
 }
 
@@ -68,43 +59,46 @@ int main(int argc, char **argv) {
 
     if (drop_to_user(username) == -1) return 1;
 
-    char path[256];
-    snprintf(path, sizeof(path), "mails/%s", username);
+    char path[PATH_MAX];
 
     if (mailfile) {
-        char mailpath[512];
-        snprintf(mailpath, sizeof(mailpath), "%s/%s", path, mailfile);
-        int fd = open(mailpath, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
-        if (fd == -1) {
-            perror("open");
+        // open mails/<username>/<mailfile>
+        int n = snprintf(path, sizeof path, "/tmp/mails/%s/%s", username, mailfile);
+        if (n < 0 || (size_t)n >= sizeof path) {
+            fprintf(stderr, "path too long\n");
             return 1;
         }
-        print_mail_from_fd(fd);
-        close(fd);
-    } else {
-        DIR *d = opendir(path);
-        if (d == NULL) {
-            perror("opendir");
-            return 1;
-        }
-        struct dirent *ent;
-        while ((ent = readdir(d)) != NULL) {
-            if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
-                continue;
-            }
-            printf("--- Mail: %s ---\n", ent->d_name);
-            char mailpath[512];
-            snprintf(mailpath, sizeof(mailpath), "%s/%s", path, ent->d_name);
-            int fd = open(mailpath, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
-            if (fd != -1) {
-                print_mail_from_fd(fd);
-                close(fd);
-            } else {
-                perror("open");
-            }
-        }
-        closedir(d);
+
+        return open_and_print(path) == 0 ? 0 : 1;
     }
 
+    // No specific file: list and print all mails in mails/<username>
+    int n = snprintf(path, sizeof path, "/tmp/mails/%s", username);
+    if (n < 0 || (size_t)n >= sizeof path) {
+        fprintf(stderr, "path too long\n");
+        return 1;
+    }
+
+    DIR *d = opendir(path);
+    if (!d) {
+        perror("opendir user dir");
+        return 1;
+    }
+
+    struct dirent *ent;
+    while ((ent = readdir(d)) != NULL) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) continue;
+
+        char file_path[PATH_MAX];
+        int m = snprintf(file_path, sizeof file_path, "%s/%s", path, ent->d_name);
+        if (m < 0 || (size_t)m >= sizeof file_path) {
+            fprintf(stderr, "path too long for entry %s\n", ent->d_name);
+            continue;
+        }
+
+        printf("--- Mail: %s ---\n", ent->d_name);
+        open_and_print(file_path);
+    }
+    closedir(d);
     return 0;
 }
