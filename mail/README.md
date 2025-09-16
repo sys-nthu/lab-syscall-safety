@@ -1,5 +1,5 @@
 
-# Lab: SUID Executable 
+# Lab: path traversal
 
 
 **Initialize the Environment**: The `setup.sh` script creates two users (`user1`, `user2`) and sets up their password and mail files for our experiment.  It also compiles the `readmail` and `readmail-safe` executables and install them to `/usr/local/bin` and `setuid` on them.
