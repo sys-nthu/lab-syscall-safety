@@ -1,9 +1,8 @@
 
-# Lab: SUID Root is Dangerous
+# Lab: SUID Executable 
 
 
-
-**Initialize the Environment**: The `setup.sh` script creates two users (`user1`, `user2`) and sets up their password and mail files for our experiment.
+**Initialize the Environment**: The `setup.sh` script creates two users (`user1`, `user2`) and sets up their password and mail files for our experiment.  It also compiles the `readmail` and `readmail-safe` executables and install them to `/usr/local/bin` and `setuid` on them.
 
     ```bash
     # Run the setup script with root privileges
@@ -28,7 +27,7 @@ Now, let's try something malicious. We will authenticate as `user1`, but ask the
 ```bash
 sudo ./readmail user1 ../user2/mail1
 Password: pass1
-# Success! We can now read the contents of user2's private mail. 😱
+# Success! We can now read the contents of user2's private mail. 
 ```
 
 
@@ -40,7 +39,7 @@ We'll repeat the exact same attack, this time targeting `readmail-safe`.
 ```bash
 sudo ./readmail-safe user1 ../user2/mail1
 Password: pass1
-# Expected output: "Permission denied" or a similar error. The attack fails! 😎
+# Expected output: "Permission denied" or a similar error. The attack fails! 
 ```
 
 
