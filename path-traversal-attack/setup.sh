@@ -29,6 +29,7 @@ done
 ROOTDIR=/tmp/mails
 echo "📫 Creating mailboxes in $ROOTDIR..."
 mkdir -p "$ROOTDIR"
+chmod 1755 "$ROOTDIR"
 for u in user1 user2 user3; do
   mkdir -p "$ROOTDIR/$u"
   chown "$u:$u" "$ROOTDIR/$u"
